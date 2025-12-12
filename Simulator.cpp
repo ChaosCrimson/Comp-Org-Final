@@ -23,72 +23,39 @@ private:
 
 	string getRegisterName(int reg) {
 		switch(reg) {
-		case 0:
-			return "$zero";
-		case 1:
-			return "$at";
-		case 2:
-			return "$v0";
-		case 3:
-			return "$v1";
-		case 4:
-			return "$a0";
-		case 5:
-			return "$a1";
-		case 6:
-			return "$a2";
-		case 7:
-			return "$a3";
-		case 8:
-			return "$t0";
-		case 9:
-			return "$t1";
-		case 10:
-			return "$t2";
-		case 11:
-			return "$t3";
-		case 12:
-			return "$t4";
-		case 13:
-			return "$t5";
-		case 14:
-			return "$t6";
-		case 15:
-			return "$t7";
-		case 16:
-			return "$s0";
-		case 17:
-			return "$s1";
-		case 18:
-			return "$s2";
-		case 19:
-			return "$s3";
-		case 20:
-			return "$s4";
-		case 21:
-			return "$s5";
-		case 22:
-			return "$s6";
-		case 23:
-			return "$s7";
-		case 24:
-			return "$t8";
-		case 25:
-			return "$t9";
-		case 26:
-			return "$k0";
-		case 27:
-			return "$k1";
-		case 28:
-			return "$gp";
-		case 29:
-			return "$sp";
-		case 30:
-			return "$fp";
-		case 31:
-			return "$ra";
-		default:
-			return "$?";
+			case 0: return "$zero";
+			case 1: return "$at";
+			case 2: return "$v0";
+			case 3: return "$v1";
+			case 4: return "$a0";
+			case 5: return "$a1";
+			case 6: return "$a2";
+			case 7: return "$a3";
+			case 8: return "$t0";
+			case 9: return "$t1";
+			case 10: return "$t2";
+			case 11: return "$t3";
+			case 12: return "$t4";
+			case 13: return "$t5";
+			case 14: return "$t6";
+			case 15: return "$t7";
+			case 16: return "$s0";
+			case 17: return "$s1";
+			case 18: return "$s2";
+			case 19: return "$s3";
+			case 20: return "$s4";
+			case 21: return "$s5";
+			case 22: return "$s6";
+			case 23: return "$s7";
+			case 24: return "$t8";
+			case 25: return "$t9";
+			case 26: return "$k0";
+			case 27: return "$k1";
+			case 28: return "$gp";
+			case 29: return "$sp";
+			case 30: return "$fp";
+			case 31: return "$ra";
+			default: return "$?";
 		}
 	}
 
@@ -96,9 +63,6 @@ private:
 		if (opcode == 0x00) {
 			if (funct == 0x20) return "ADD";
 			if (funct == 0x22) return "SUB";
-			if (funct == 0x24) return "AND";
-			if (funct == 0x25) return "OR";
-			if (funct == 0x2A) return "SLT";
 			return "R-type";
 		}
 		else if (opcode == 0x08) return "ADDI";
@@ -106,6 +70,18 @@ private:
 		else if (opcode == 0x2B) return "SW";
 		else if (opcode == 0x23) return "LW";
 		return "UNKNOWN";
+	}
+
+	void printMemory(uint32_t address) {
+		cout << "Memory[0x" << hex << setw(4) << setfill('0') << address << "]: ";
+		if (address + 3 < MEMORY_SIZE) {
+			uint32_t value = (memory[address] << 24) | (memory[address + 1] << 16) |
+			                 (memory[address + 2] << 8) | memory[address + 3];
+			cout << "0x" << hex << setw(8) << setfill('0') << value << dec;
+		} else {
+			cout << "OUT OF BOUNDS";
+		}
+		cout << endl;
 	}
 
 public:
@@ -217,27 +193,12 @@ public:
 		switch (funct) {
 		case 0x20:
 			registers[rd] = registers[rs] + registers[rt];
-			cout << "ADD " << getRegisterName(rd) << ", " << getRegisterName(rs)
+			cout << "ADD " << getRegisterName(rd) << ", " << getRegisterName(rs) 
 			     << ", " << getRegisterName(rt) << endl;
 			break;
 		case 0x22:
 			registers[rd] = registers[rs] - registers[rt];
-			cout << "SUB " << getRegisterName(rd) << ", " << getRegisterName(rs)
-			     << ", " << getRegisterName(rt) << endl;
-			break;
-		case 0x24:
-			registers[rd] = registers[rs] & registers[rt];
-			cout << "AND " << getRegisterName(rd) << ", " << getRegisterName(rs)
-			     << ", " << getRegisterName(rt) << endl;
-			break;
-		case 0x25:
-			registers[rd] = registers[rs] | registers[rt];
-			cout << "OR " << getRegisterName(rd) << ", " << getRegisterName(rs)
-			     << ", " << getRegisterName(rt) << endl;
-			break;
-		case 0x2A:
-			registers[rd] = (registers[rs] < registers[rt]) ? 1 : 0;
-			cout << "SLT " << getRegisterName(rd) << ", " << getRegisterName(rs)
+			cout << "SUB " << getRegisterName(rd) << ", " << getRegisterName(rs) 
 			     << ", " << getRegisterName(rt) << endl;
 			break;
 		default:
@@ -249,7 +210,7 @@ public:
 	void executeADDI() {
 		int32_t signExtImm = (int16_t)immediate;
 		registers[rt] = registers[rs] + signExtImm;
-		cout << "ADDI " << getRegisterName(rt) << ", " << getRegisterName(rs)
+		cout << "ADDI " << getRegisterName(rt) << ", " << getRegisterName(rs) 
 		     << ", " << signExtImm << endl;
 	}
 
@@ -276,7 +237,7 @@ public:
 			memory[address + 2] = (value >> 8) & 0xFF;
 			memory[address + 3] = value & 0xFF;
 
-			cout << "SW " << getRegisterName(rt) << ", " << signExtImm
+			cout << "SW " << getRegisterName(rt) << ", " << signExtImm 
 			     << "(" << getRegisterName(rs) << ")" << endl;
 		}
 	}
@@ -290,7 +251,7 @@ public:
 			                (memory[address + 2] << 8) | memory[address + 3];
 			registers[rt] = value;
 
-			cout << "LW " << getRegisterName(rt) << ", " << signExtImm
+			cout << "LW " << getRegisterName(rt) << ", " << signExtImm 
 			     << "(" << getRegisterName(rs) << ")" << endl;
 		}
 	}
@@ -299,6 +260,8 @@ public:
 		cout << "\n=== Starting CPU Simulation ===" << endl;
 
 		while (running && clockCycles < maxCycles) {
+			uint32_t currentPC = PC;
+			
 			cout << "\n--- Cycle " << clockCycles + 1 << " ---" << endl;
 			cout << "PC = 0x" << hex << setw(4) << setfill('0') << PC << dec << endl;
 
@@ -306,15 +269,16 @@ public:
 			if (!running) break;
 
 			decode();
-
-			cout << "IR = 0x" << hex << setw(8) << setfill('0') << IR << dec
+			
+			cout << "IR = 0x" << hex << setw(8) << setfill('0') << IR << dec 
 			     << " (" << getInstructionName() << ")" << endl;
-
+			
 			execute();
 
 			clockCycles++;
-
+			
 			printRegisters();
+			printMemory(currentPC);
 		}
 
 		cout << "\n=== Simulation Complete ===" << endl;
@@ -338,3 +302,12 @@ public:
 	}
 };
 
+int main() {
+	CPU cpu;
+
+	if (!cpu.loadProgram("program.txt")) {
+		return 1;
+	}
+	cpu.run();
+	return 0;
+}
